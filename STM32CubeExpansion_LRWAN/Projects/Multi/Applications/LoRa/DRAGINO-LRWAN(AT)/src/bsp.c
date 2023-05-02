@@ -111,7 +111,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	{
 		PPRINTF("\r\n");
 		PPRINTF("Bat:%.3f V\r\n",(batteryLevel_mV/1000.0));
-		if(mode==6)
+		if(mode==6||mode==10)
 		{
 			PPRINTF("PB14_count1:%u\r\n",COUNT);
 		}
@@ -151,7 +151,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 		}
 	}
 	
-  if((mode==1)||(mode==3))
+  if((mode==1)||(mode==3)||(mode==10))
   {		
 		#ifdef USE_SHT
 		if(flags==0)
@@ -240,7 +240,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 		}
 	}
 	
-	if((mode!=3)&&(mode!=8)&&(mode!=9))
+	if((mode!=3)&&(mode!=8)&&(mode!=9)&&(mode!=10))
 	{
 		BSP_oil_float_Init();
 		for(uint8_t q=0;q<6;q++)
@@ -485,7 +485,7 @@ void  BSP_sensor_Init( void  )
 	
 	 pwr_control_IoInit();		
 	
-	if((mode==1)||(mode==3))
+	if((mode==1)||(mode==3)||(mode==10))
 	{	 
 	 #ifdef USE_SHT
 	 uint8_t txdata1[1]={0xE7},txdata2[2]={0xF3,0x2D};

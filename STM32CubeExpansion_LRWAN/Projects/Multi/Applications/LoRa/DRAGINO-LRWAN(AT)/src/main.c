@@ -351,7 +351,7 @@ int main( void )
 					normal2_status=HAL_GPIO_ReadPin(GPIO_EXTI15_PORT,GPIO_EXTI15_PIN);
 					normal3_status=HAL_GPIO_ReadPin(GPIO_EXTI4_PORT,GPIO_EXTI4_PIN);
 					is_check_exit=0;
-					if(((switch_status!=normal_status)&&(mode!=6)&&(mode!=9)&&(inmode==1))||
+					if(((switch_status!=normal_status)&&(mode!=6)&&(mode!=9)&&(mode!=10)&&(inmode==1))||
 						((switch_status2!=normal2_status)&&(mode==7)&&(inmode2==1))||
 					  ((switch_status3!=normal3_status)&&((mode==7)||(mode==9))&&(inmode3==1)))
 					{
@@ -826,6 +826,37 @@ static void Send( void )
 		AppData.Buff[i++] =	(uint8_t)(COUNT2); 		
 	}
 	
+	else if (mode==10)
+	{
+		AppData.Buff[i++] =(batteryLevel_mV>>8);       //level of battery in mV
+		AppData.Buff[i++] =batteryLevel_mV & 0xFF;
+
+		AppData.Buff[i++]=(int)(sensor_data.temp1*10)>>8;     //DS18B20
+		AppData.Buff[i++]=(int)(sensor_data.temp1*10);
+
+		AppData.Buff[i++] = (uint8_t)((COUNT)>>24);
+		AppData.Buff[i++] =	(uint8_t)((COUNT)>>16);
+		AppData.Buff[i++] = (uint8_t)((COUNT)>>8);
+		AppData.Buff[i++] =	(uint8_t)(COUNT);
+
+		#if defined USE_SHT
+		if(bh1750flags==1)
+		{
+			AppData.Buff[i++] =(sensor_data.illuminance)>>8;
+			AppData.Buff[i++] =(sensor_data.illuminance);
+			AppData.Buff[i++] = 0x00;
+			AppData.Buff[i++] = 0x00;
+		}
+		else
+		{
+			AppData.Buff[i++] =(int)(sensor_data.temp_sht*10)>>8;
+			AppData.Buff[i++] =(int)(sensor_data.temp_sht*10);
+			AppData.Buff[i++] =(int)(sensor_data.hum_sht*10)>>8;
+			AppData.Buff[i++] =(int)(sensor_data.hum_sht*10);
+		}
+		#endif
+	}
+
 	if(exit_temp==1)
 	{
 		exti_flag=0;
@@ -1576,7 +1607,7 @@ void send_exti(void)
 {
 	if(exti_flag==1)
 	{
-		 if((mode!=6)&&(mode!=9))
+		 if((mode!=6)&&(mode!=9)&&(mode!=10))
 		 {
 			 if((( LoRaMacState & 0x00000001 ) != 0x00000001) &&(( LoRaMacState & 0x00000010 ) != 0x00000010))
 			 {	

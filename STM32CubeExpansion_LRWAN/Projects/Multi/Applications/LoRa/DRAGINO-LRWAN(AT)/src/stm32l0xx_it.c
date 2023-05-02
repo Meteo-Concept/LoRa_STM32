@@ -284,12 +284,12 @@ void EXTI4_15_IRQHandler( void )
   { 
 	 if((inmode!=0)&&(join_network==1))
 	 {
-	  if(((mode==6)||(mode==9))&&((inmode==2)||(inmode==3)))
+	  if(((mode==6)||(mode==9)||(mode==10))&&((inmode==2)||(inmode==3)))
 		{
 			exti_flag=1;
 			COUNT++;
 		}
-		else if((mode!=6)&&(mode!=9))
+		else if((mode!=6)&&(mode!=9)&&(mode!=10))
 		{
 			exti_flag=1;	
 			switch_status=HAL_GPIO_ReadPin(GPIO_EXTI14_PORT,GPIO_EXTI14_PIN);			

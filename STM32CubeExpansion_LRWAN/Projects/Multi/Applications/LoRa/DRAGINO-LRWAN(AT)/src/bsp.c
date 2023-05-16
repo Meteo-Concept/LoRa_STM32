@@ -96,11 +96,27 @@ extern I2C_HandleTypeDef I2cHandle2;
 extern I2C_HandleTypeDef I2cHandle3;
 tfsensor_reading_t reading_t;
 #endif
+static void BSP_init_SHT( void );
 
 extern uint8_t mode;
 extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
-extern uint32_t COUNT,COUNT2;
+extern uint32_t COUNT,COUNT2,MAX_GUST,COUNT_GUST;
+static const int GUST_PERIOD = 2250;
+
+
+static TimerEvent_t GustTimer;
+static void OnGustTimerEvent( void );
+
+static void OnGustTimerEvent( void )
+{
+	TimerSetValue(&GustTimer, GUST_PERIOD);
+	TimerStart(&GustTimer);
+	if (COUNT_GUST > MAX_GUST)
+		MAX_GUST = COUNT_GUST;
+	COUNT_GUST=0;
+}
+
 
 void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 {	
@@ -111,7 +127,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	{
 		PPRINTF("\r\n");
 		PPRINTF("Bat:%.3f V\r\n",(batteryLevel_mV/1000.0));
-		if(mode==6||mode==10)
+		if(mode==6)
 		{
 			PPRINTF("PB14_count1:%u\r\n",COUNT);
 		}
@@ -126,6 +142,12 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 			PPRINTF("PB14_count1:%u\r\n",COUNT);
 			PPRINTF("PB15_count2:%u\r\n",COUNT2);
 			PPRINTF("PA4_status:%d\r\n",HAL_GPIO_ReadPin(GPIO_EXTI4_PORT,GPIO_EXTI4_PIN));
+		}
+		else if(mode==10)
+		{
+			PPRINTF("PB14_count1:%u\r\n",COUNT);
+			PPRINTF("PB15_count2:%u\r\n",COUNT2);
+			PPRINTF("Gust_max:%u\r\n",MAX_GUST);
 		}
 		else
 		{
@@ -240,7 +262,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 		}
 	}
 	
-	if((mode!=3)&&(mode!=8)&&(mode!=9)&&(mode!=10))
+	if((mode!=3)&&(mode!=8)&&(mode!=9))
 	{
 		BSP_oil_float_Init();
 		for(uint8_t q=0;q<6;q++)
@@ -479,14 +501,8 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
   HAL_GPIO_DeInit(I2Cx_SDA_GPIO_PORT, I2Cx_SDA_PIN);
 }
 
-void  BSP_sensor_Init( void  )
+void BSP_init_SHT( void )
 {
-  #if defined(LoRa_Sensor_Node)
-	
-	 pwr_control_IoInit();		
-	
-	if((mode==1)||(mode==3)||(mode==10))
-	{	 
 	 #ifdef USE_SHT
 	 uint8_t txdata1[1]={0xE7},txdata2[2]={0xF3,0x2D};
 	 
@@ -547,6 +563,17 @@ void  BSP_sensor_Init( void  )
 		 PRINTF("\n\rNo I2C device detected\r\n");
 	 }
 	 #endif
+ }
+
+void  BSP_sensor_Init( void  )
+{
+  #if defined(LoRa_Sensor_Node)
+	
+	 pwr_control_IoInit();		
+	
+	if((mode==1)||(mode==3))
+	{	 
+		BSP_init_SHT();
    }
 	 
 	else if(mode==2)
@@ -611,6 +638,15 @@ void  BSP_sensor_Init( void  )
 		{
 			BSP_oil_float_DeInit();
 		}
+	}
+	else if((mode==10))
+	{
+		BSP_init_SHT();
+		GPIO_EXTI15_IoInit(inmode2);
+		
+		TimerInit(&GustTimer, OnGustTimerEvent);
+		TimerSetValue(&GustTimer, GUST_PERIOD);
+		TimerStart(&GustTimer);
 	}
 	
 	GPIO_EXTI14_IoInit(inmode);

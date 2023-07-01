@@ -1137,7 +1137,7 @@ static void LORA_RxData( lora_AppData_t *AppData )
 		{
 			if( AppData->BuffSize == 2 )         
 			{	
-				if((AppData->Buff[1]>=0x01)&&(AppData->Buff[1]<=0x09))    //---->AT+MOD
+				if((AppData->Buff[1]>=0x01)&&(AppData->Buff[1]<=0x0A))    //---->AT+MOD
 				{
 					mode=AppData->Buff[1];
 					EEPROM_Store_Config();

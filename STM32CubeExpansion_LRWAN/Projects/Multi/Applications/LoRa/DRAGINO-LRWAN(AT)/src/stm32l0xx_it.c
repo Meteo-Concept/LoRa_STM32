@@ -70,6 +70,10 @@ extern uint32_t COUNT,COUNT2;
 extern uint8_t mode;
 extern uint8_t switch_status,switch_status2,switch_status3;
 extern bool join_network;
+static uint32_t lastCountInt;
+
+#define LOCKOUT_INT_DELAY 300 //ms
+
 /** @addtogroup STM32L1xx_HAL_Examples
   * @{
   */
@@ -280,23 +284,37 @@ void EXTI4_15_IRQHandler( void )
   HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_13 );
 
 //  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_14 );
- if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET) 
-  { 
-	 if((inmode!=0)&&(join_network==1))
-	 {
-	  if(((mode==6)||(mode==9)||(mode==10))&&((inmode==2)||(inmode==3)))
-		{
-			exti_flag=1;
-			COUNT++;
-		}
-		else if((mode!=6)&&(mode!=9)&&(mode!=10))
-		{
-			exti_flag=1;	
-			switch_status=HAL_GPIO_ReadPin(GPIO_EXTI14_PORT,GPIO_EXTI14_PIN);			
-		}
-	 }
-	 __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_14);
-   HAL_GPIO_EXTI_Callback(GPIO_PIN_14);		
+  if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET) 
+  {
+    if((inmode!=0)&&(join_network==1))
+    {
+      if(((mode==6)||(mode==9)||(mode==10))&&((inmode==2)||(inmode==3)))
+      {
+        exti_flag=1;
+        COUNT++;
+      }
+      else if((mode==10)&&((inmode==2)||(inmode==3)))
+      {
+        HW_RTC_DelayMs(1); // Debounce delay, ignore pulses < 1ms
+        if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET)
+        {
+          uint32_t time = HW_RTC_GetTimerValue();
+          if (HW_RTC_Tick2ms(time - lastCountInt) > LOCKOUT_INT_DELAY)
+          {
+            exti_flag=1;
+            COUNT++;
+            lastCountInt = time;
+          }
+        }
+      }
+      else if((mode!=6)&&(mode!=9)&&(mode!=10))
+      {
+        exti_flag=1;
+        switch_status=HAL_GPIO_ReadPin(GPIO_EXTI14_PORT,GPIO_EXTI14_PIN);
+      }
+    }
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_14);
+    HAL_GPIO_EXTI_Callback(GPIO_PIN_14);
   }
 
 //  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_15 );

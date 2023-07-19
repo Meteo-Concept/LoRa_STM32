@@ -63,6 +63,9 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "stm32l0xx_it.h"
 #include "iwdg.h"
 
+#include "at.h"
+#include "timer.h"
+
 extern TIM_HandleTypeDef htim3;
 extern int exti_flag,exti_flag2,exti_flag3;
 extern uint8_t inmode,inmode2,inmode3;
@@ -70,9 +73,10 @@ extern uint32_t COUNT,COUNT2;
 extern uint8_t mode;
 extern uint8_t switch_status,switch_status2,switch_status3;
 extern bool join_network;
-static uint32_t lastCountInt;
+extern uint32_t lastCountInt;
+extern uint16_t intensity;
 
-#define LOCKOUT_INT_DELAY 300 //ms
+#define LOCKOUT_INT_DELAY 500 //ms
 
 /** @addtogroup STM32L1xx_HAL_Examples
   * @{
@@ -288,22 +292,23 @@ void EXTI4_15_IRQHandler( void )
   {
     if((inmode!=0)&&(join_network==1))
     {
-      if(((mode==6)||(mode==9)||(mode==10))&&((inmode==2)||(inmode==3)))
+      if(((mode==6)||(mode==9))&&((inmode==2)||(inmode==3)))
       {
         exti_flag=1;
         COUNT++;
       }
       else if((mode==10)&&((inmode==2)||(inmode==3)))
       {
-        HW_RTC_DelayMs(1); // Debounce delay, ignore pulses < 1ms
-        if(__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_14) != RESET)
+        uint32_t diff = TimerGetElapsedTime(lastCountInt);
+        if (diff > LOCKOUT_INT_DELAY)
         {
-          uint32_t time = HW_RTC_GetTimerValue();
-          if (HW_RTC_Tick2ms(time - lastCountInt) > LOCKOUT_INT_DELAY)
+          exti_flag=1;
+          COUNT++;
+          lastCountInt = TimerGetCurrentTime();
+          uint16_t newIntensity = 2 * 3600000 / diff;
+          if (newIntensity > intensity)
           {
-            exti_flag=1;
-            COUNT++;
-            lastCountInt = time;
+            intensity = newIntensity;
           }
         }
       }

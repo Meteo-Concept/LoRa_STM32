@@ -151,6 +151,9 @@ uint8_t LinkADR_NbTrans_retransmission_nbtrials=0;
 uint8_t unconfirmed_uplink_change_to_confirmed_uplink_status=0;
 uint16_t unconfirmed_uplink_change_to_confirmed_uplink_timeout=0;
 
+TimerTime_t lastCountInt=0U;
+uint16_t intensity=0U;
+
 extern bool bh1750flags;
 extern uint8_t mode;
 extern uint8_t mode2_flag;
@@ -831,10 +834,10 @@ static void Send( void )
 		AppData.Buff[i++] =(batteryLevel_mV>>8);       //level of battery in mV
 		AppData.Buff[i++] =batteryLevel_mV & 0xFF;
 
-		AppData.Buff[i++]=(int)(sensor_data.temp1*10)>>8;     //DS18B20
-		AppData.Buff[i++]=(int)(sensor_data.temp1*10);
+		AppData.Buff[i++]=(intensity)>>8;     //rainfall max rate
+		AppData.Buff[i++]=(intensity);
 
-		AppData.Buff[i++] = (uint8_t)((COUNT)>>24);
+		AppData.Buff[i++] = (uint8_t)((COUNT)>>24); // rainfall
 		AppData.Buff[i++] =	(uint8_t)((COUNT)>>16);
 		AppData.Buff[i++] = (uint8_t)((COUNT)>>8);
 		AppData.Buff[i++] =	(uint8_t)(COUNT);
@@ -855,6 +858,9 @@ static void Send( void )
 			AppData.Buff[i++] =(int)(sensor_data.hum_sht*10);
 		}
 		#endif
+
+		/* reset max intensity */
+		intensity = 0U;
 	}
 
 	if(exit_temp==1)

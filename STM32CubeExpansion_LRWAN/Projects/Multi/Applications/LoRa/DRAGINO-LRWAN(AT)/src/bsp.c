@@ -101,6 +101,8 @@ extern uint8_t mode;
 extern uint8_t inmode,inmode2,inmode3;
 extern uint16_t power_time;
 extern uint32_t COUNT,COUNT2;
+extern TimerTime_t lastCountInt;
+extern uint16_t intensity;
 
 void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 {	
@@ -111,9 +113,14 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	{
 		PPRINTF("\r\n");
 		PPRINTF("Bat:%.3f V\r\n",(batteryLevel_mV/1000.0));
-		if(mode==6||mode==10)
+		if(mode==6)
 		{
 			PPRINTF("PB14_count1:%u\r\n",COUNT);
+		}
+		else if(mode==10)
+		{
+			PPRINTF("PB14_count1:%u\r\n",COUNT);
+			PPRINTF("Rate:%.1f\r\n",intensity/10.0);
 		}
 		else if(mode==7)
 		{
@@ -135,7 +142,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 	
   IWDG_Refresh();		
 	//+3.3V power sensors	
-	if(mode!=3)
+	if((mode!=3)&&(mode!=10))
 	{
 		sensor_data->temp1=DS18B20_GetTemp_SkipRom(1);
 		if(message==1)
@@ -150,7 +157,7 @@ void BSP_sensor_Read( sensor_t *sensor_data, uint8_t message)
 			}
 		}
 	}
-	
+
   if((mode==1)||(mode==3)||(mode==10))
   {		
 		#ifdef USE_SHT
@@ -547,6 +554,11 @@ void  BSP_sensor_Init( void  )
 		 PRINTF("\n\rNo I2C device detected\r\n");
 	 }
 	 #endif
+	 if(mode==10)
+	 {
+		BSP_oil_float_DeInit();
+		lastCountInt = TimerGetCurrentTime();
+	 }
    }
 	 
 	else if(mode==2)

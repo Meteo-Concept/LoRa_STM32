@@ -547,7 +547,7 @@ void fdr_config(void)
 			LoRaMacMibSetRequestConfirm( &mibReq );
 	#endif	
 				
-	mode=1;			
+	mode=10;			
 	inmode=2;		
 	inmode2=2;		
 	inmode3=2;					

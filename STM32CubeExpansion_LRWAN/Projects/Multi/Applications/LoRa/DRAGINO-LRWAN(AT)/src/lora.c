@@ -131,6 +131,8 @@ static uint32_t s_key[32];    //store key
 
 extern uint32_t APP_TX_DUTYCYCLE;
 
+extern uint16_t adc_resistance;
+
 #define HEX16(X)  X[0],X[1], X[2],X[3], X[4],X[5], X[6],X[7],X[8],X[9], X[10],X[11], X[12],X[13], X[14],X[15]
 #define HEX8(X)   X[0],X[1], X[2],X[3], X[4],X[5], X[6],X[7]
  /**
@@ -1175,7 +1177,7 @@ void EEPROM_Store_Config(void)
 	
 	s_config[config_count++]=confirmed_uplink_retransmission_nbtrials<<24|confirmed_uplink_counter_retransmission_increment_switch<<16|LinkADR_NbTrans_retransmission_nbtrials<<8|LinkADR_NbTrans_uplink_counter_retransmission_increment_switch;
 	
-	s_config[config_count++]=unconfirmed_uplink_change_to_confirmed_uplink_timeout;	
+	s_config[config_count++]=(adc_resistance<<16) | (unconfirmed_uplink_change_to_confirmed_uplink_timeout&0xFFFF);	
 	
 	EEPROM_program(EEPROM_USER_START_ADDR_CONFIG,s_config,config_count);//store config
 	
@@ -1326,6 +1328,8 @@ void EEPROM_Read_Config(void)
 	LinkADR_NbTrans_uplink_counter_retransmission_increment_switch=r_config[18]&0xFF;
 	
 	unconfirmed_uplink_change_to_confirmed_uplink_timeout=r_config[19]&0xFFFF;
+	
+	adc_resistance=r_config[19]>>16&0xFFFF;
 }
 
 uint16_t string_touint(void)

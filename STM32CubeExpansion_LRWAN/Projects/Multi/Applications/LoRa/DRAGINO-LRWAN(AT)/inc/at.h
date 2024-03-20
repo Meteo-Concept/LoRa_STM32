@@ -134,6 +134,7 @@ typedef enum eATEerror
 #define AT_INTMOD3    "+INTMOD3"
 #define AT_WEIGRE     "+WEIGRE"
 #define AT_WEIGAP     "+WEIGAP"
+#define AT_ADC_RESISTANCE  "+ADCRES"
 #define AT_5VT        "+5VT"
 #define AT_SETCNT     "+SETCNT"
 #define AT_DDETECT    "+DDETECT"
@@ -702,6 +703,10 @@ ATEerror_t at_weightreset(const char *param);
 ATEerror_t at_weight_GapValue_set(const char *param);
 
 ATEerror_t at_weight_GapValue_get(const char *param);
+
+ATEerror_t at_adc_resistance_set(const char *param);
+
+ATEerror_t at_adc_resistance_get(const char *param);
 
 ATEerror_t at_5Vtime_set(const char *param);
 

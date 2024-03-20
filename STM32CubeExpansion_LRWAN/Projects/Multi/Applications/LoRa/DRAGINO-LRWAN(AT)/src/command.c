@@ -666,6 +666,17 @@ static const struct ATCommand_s ATCommand[] =
 	},
 
 		{
+	  .string = AT_ADC_RESISTANCE,
+    .size_string = sizeof(AT_ADC_RESISTANCE) - 1,
+#ifndef NO_HELP
+    .help_string = "AT"AT_ADC_RESISTANCE ":Get or Set the value of the resistor soldered between VCC and PA0\r\n",
+#endif
+    .get = at_adc_resistance_get,
+    .set = at_adc_resistance_set,
+    .run = at_return_error,
+	},
+		
+		{
 	  .string = AT_5VT,
     .size_string = sizeof(AT_5VT) - 1,
 #ifndef NO_HELP

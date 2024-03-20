@@ -113,6 +113,9 @@ extern uint8_t confirmed_uplink_retransmission_nbtrials;
 extern uint8_t LinkADR_NbTrans_uplink_counter_retransmission_increment_switch;
 extern uint8_t LinkADR_NbTrans_retransmission_nbtrials;
 extern uint16_t unconfirmed_uplink_change_to_confirmed_uplink_timeout;
+
+extern uint16_t adc_resistance;
+
 /* Private macro -------------------------------------------------------------*/
 /**
  * @brief Macro to return when an error occurs
@@ -1707,6 +1710,32 @@ ATEerror_t at_weight_GapValue_set(const char *param)
 ATEerror_t at_weight_GapValue_get(const char *param)
 {
 	PPRINTF("%0.1f\r\n",GapValue);
+	
+  return AT_OK;		
+}
+
+ATEerror_t at_adc_resistance_set(const char *param)
+{
+	uint16_t res;
+	
+	if (tiny_sscanf(param, "%d", &res) != 1)
+  {
+    return AT_PARAM_ERROR;
+  }	
+	
+	if (res<1000)
+  {
+    return AT_PARAM_ERROR;
+  }	
+	
+	adc_resistance=res;
+	
+  return AT_OK;	
+}
+
+ATEerror_t at_adc_resistance_get(const char *param)
+{
+	PPRINTF("%d\r\n",adc_resistance);
 	
   return AT_OK;		
 }

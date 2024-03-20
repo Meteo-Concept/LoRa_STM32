@@ -166,6 +166,8 @@ extern uint8_t dwelltime;
 extern bool debug_flags;
 extern bool mac_response_flag;
 
+uint16_t adc_resistance=10000;
+
 static void send_exti(void);
 static void Flash_copy_key_to_EEPROM(void);
 /*!
@@ -780,8 +782,8 @@ static void Send( void )
 		AppData.Buff[i++] =(batteryLevel_mV>>8);       //level of battery in mV
 		AppData.Buff[i++] =batteryLevel_mV & 0xFF;
 	
-		AppData.Buff[i++]=(int)(sensor_data.temp1*10)>>8;     //DS18B20
-		AppData.Buff[i++]=(int)(sensor_data.temp1*10);	
+		AppData.Buff[i++]=(int)(adc_resistance)>>8;     //resistance used for the ADC circuit
+		AppData.Buff[i++]=(int)(adc_resistance);	
 		
 		AppData.Buff[i++] =(int)(sensor_data.oil)>>8;          //oil float
 		AppData.Buff[i++] =(int)sensor_data.oil;

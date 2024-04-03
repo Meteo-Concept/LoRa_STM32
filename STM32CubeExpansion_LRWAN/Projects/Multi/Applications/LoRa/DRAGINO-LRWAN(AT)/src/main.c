@@ -1399,6 +1399,20 @@ static void LORA_RxData( lora_AppData_t *AppData )
 			}
 			break;
 		}
+				
+		case 0x70:
+		{
+			if( AppData->BuffSize == 3 )         
+			{	
+				uint16_t value = (AppData->Buff[1] << 8)|(AppData->Buff[2]);   //---->AT+ADCRES
+				if( value >= 1000 )
+				{
+					adc_resistance=value;
+					EEPROM_Store_Config();
+				}
+			}				
+			break;
+		}
 	
 		default:
 		break;
